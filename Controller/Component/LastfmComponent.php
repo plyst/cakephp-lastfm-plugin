@@ -42,8 +42,21 @@ class LastfmComponent extends Component {
 				$url .= "&$key=$value";
 			}
 		}
-		debug($url);
 		return json_decode($this->get_data($url), true);
+	}
+	
+	/**
+	 * Send your user to last.fm/api/auth with your API key as a parameter.
+	 * 
+	 * @param $callback_url You can optionally specify a callback URL that is different to your API Account callback url. Include this as a query param cb. This allows you to have users forward to a specific part of your site after the authorisation process.
+	 */
+	public function authorize($callback_url = null) {
+		$url = "http://www.last.fm/api/auth/?api_key=$this->apikey";
+		if ($callback_url!=null) {
+			$url .= "&cb=$callback_url";
+		}
+		header("Location: $url"); 
+	    exit();
 	}
 	
 	/**
