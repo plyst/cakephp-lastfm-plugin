@@ -11,7 +11,9 @@
  */
 class LastfmComponent extends Component {
 	
-	private $baseurl = 'http://ws.audioscrobbler.com/2.0/';
+	private $apiurl = 'http://ws.audioscrobbler.com/2.0/';
+
+	private $authurl = 'http://www.last.fm/api/auth/';
 	
 	private $apikey = null;
 	
@@ -37,7 +39,7 @@ class LastfmComponent extends Component {
 	 * @return An array containing the requested data
 	 */
 	public function get($method, $params = null, $signed = false) {
-		$url = "$this->baseurl?format=json&api_key=$this->apikey&method=$method";
+		$url = "$this->apiurl?format=json&api_key=$this->apikey&method=$method";
 		if ($params!=null) {
 			foreach ($params as $key => $value) {
 				$url .= "&$key=$value";
@@ -62,7 +64,7 @@ class LastfmComponent extends Component {
 	 * @param $callback_url You can optionally specify a callback URL that is different to your API Account callback url. Include this as a query param cb. This allows you to have users forward to a specific part of your site after the authorisation process.
 	 */
 	public function authorize($callback_url = null) {
-		$url = "http://www.last.fm/api/auth/?api_key=$this->apikey";
+		$url = "$this->authurl?api_key=$this->apikey";
 		if ($callback_url!=null) {
 			$url .= "&cb=$callback_url";
 		}
