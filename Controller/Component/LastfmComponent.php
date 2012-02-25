@@ -33,14 +33,25 @@ class LastfmComponent extends Component {
 	 * 
 	 * @param $method The method of the API to call
 	 * @param $params The API params
+	 * @param $signed If the API method should be signed
 	 * @return An array containing the requested data
 	 */
-	public function get($method, $params = null) {
+	public function get($method, $params = null, $signed = false) {
 		$url = "$this->baseurl?format=json&api_key=$this->apikey&method=$method";
 		if ($params!=null) {
 			foreach ($params as $key => $value) {
 				$url .= "&$key=$value";
 			}
+		}
+		if ($signed) {
+			$orderedParams = array_merge($params, array('api_key' => $this->apikey, 'method' => $method));
+			ksort($orderedParams);
+			$str = '';
+			foreach ($orderedParams as $key => $value) {
+				$str .= $key . $value;
+			}
+			$str .= $this->apisecret;
+			$url .= "&api_sig=" .  md5($str);
 		}
 		return json_decode($this->get_data($url), true);
 	}
@@ -57,6 +68,15 @@ class LastfmComponent extends Component {
 		}
 		header("Location: $url"); 
 	    exit();
+	}
+	
+	/**
+	 * Fetch a session key for a user.
+	 * 
+	 * @param $token A 32-character ASCII hexadecimal MD5 hash returned after calling the authorize() method
+	 */
+	public function getSession($token) {
+		return $this->get('auth.getSession', array('token' => $token), true);
 	}
 	
 	/**
