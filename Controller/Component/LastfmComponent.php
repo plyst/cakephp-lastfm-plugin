@@ -41,7 +41,8 @@ class LastfmComponent extends Component {
 	public function get($method, $params = null, $signed = false) {
 		$url = "$this->apiurl?format=json&api_key=$this->apikey&method=$method";
 		if ($params!=null) {
-			foreach ($params as $key => $value) {
+			foreach ($params as $key => &$value) {
+				$value = urlencode($value);
 				$url .= "&$key=$value";
 			}
 		}
