@@ -36,14 +36,14 @@ class LastfmComponent extends Component {
 	 * @param $method The method of the API to call
 	 * @param $params The API params
 	 * @param $signed If the API method should be signed
+	 * @param $post If post should be used instead of get (required for signed requests)
 	 * @return An array containing the requested data
 	 */
-	public function get($method, $params = null, $signed = false) {
-		$url = "$this->apiurl?format=json&api_key=$this->apikey&method=$method";
+	public function get($method, $params = null, $signed = false, $post = false) {
+		$p = "format=json&api_key=$this->apikey&method=$method";
 		if ($params!=null) {
-			foreach ($params as $key => &$value) {
-				$value = urlencode($value);
-				$url .= "&$key=$value";
+			foreach ($params as $key => $value) {
+				$p .= "&$key=" . urlencode($value);
 			}
 		}
 		if ($signed) {
@@ -54,9 +54,15 @@ class LastfmComponent extends Component {
 				$str .= $key . $value;
 			}
 			$str .= $this->apisecret;
-			$url .= "&api_sig=" .  md5($str);
+			$p .= "&api_sig=" .  md5($str);
 		}
-		return json_decode($this->get_data($url), true);
+		if ($post) {
+			$result = $this->get_data($this->apiurl, $p);
+		} else {
+			$result = $this->get_data($this->apiurl . '?' . $p);
+		}
+		
+		return json_decode($result, true);
 	}
 	
 	/**
@@ -86,15 +92,20 @@ class LastfmComponent extends Component {
 	 * Performs a cURL request on the given URL and returns the response.
 	 * 
 	 * @param $url The URL to perform the cURL request to
+	 * @param $post $_POST data to post to the URL
 	 * @return The response of the given URL
 	 */
-	private function get_data($url)
+	private function get_data($url, $post = null)
 	{
 		$ch = curl_init();
 		$timeout = 5;
 		curl_setopt($ch, CURLOPT_URL, $url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+		if ($post != null) {
+			curl_setopt($ch, CURLOPT_POST, (count(explode('&', $post))+1));
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+		}
 		$data = curl_exec($ch);
 		curl_close($ch);
 		return $data;
